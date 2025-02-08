@@ -6,7 +6,7 @@ const LeaderboardPage = () => {
   const { players, scores } = useData();
 
   const calculateAverageScore = (playerId: string) => {
-    const playerScores = scores.filter((score) => score.playerId === playerId);
+    const playerScores = scores.filter((score) => score.player_id === playerId);
     if (playerScores.length === 0) return 0;
     const total = playerScores.reduce((sum, score) => sum + score.value, 0);
     return total / playerScores.length;
@@ -41,7 +41,7 @@ const LeaderboardPage = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Total Games: {scores.filter((score) => score.playerId === player.id).length}
+                Total Games: {scores.filter((score) => score.player_id === player.id).length}
               </p>
             </CardContent>
           </Card>

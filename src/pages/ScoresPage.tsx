@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -134,9 +133,9 @@ const ScoresPage = () => {
             <CardContent>
               <div className="space-y-2">
                 {scores
-                  .filter((score) => score.gameId === game.id)
+                  .filter((score) => score.game_id === game.id)
                   .map((score) => {
-                    const player = players.find((p) => p.id === score.playerId);
+                    const player = players.find((p) => p.id === score.player_id);
                     return (
                       <div
                         key={score.id}

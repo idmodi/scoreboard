@@ -3,6 +3,9 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from './AuthContext';
+import * as playerService from '@/services/playerService';
+import * as gameService from '@/services/gameService';
+import * as scoreService from '@/services/scoreService';
 
 export interface Player {
   id: string;
@@ -54,14 +57,14 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     const loadData = async () => {
       try {
         const [playersData, gamesData, scoresData] = await Promise.all([
-          supabase.from('players').select('*'),
-          supabase.from('games').select('*'),
-          supabase.from('scores').select('*')
+          playerService.fetchPlayers(),
+          gameService.fetchGames(),
+          scoreService.fetchScores()
         ]);
 
-        if (playersData.data) setPlayers(playersData.data);
-        if (gamesData.data) setGames(gamesData.data);
-        if (scoresData.data) setScores(scoresData.data);
+        if (playersData) setPlayers(playersData);
+        if (gamesData) setGames(gamesData);
+        if (scoresData) setScores(scoresData);
       } catch (error) {
         console.error('Error loading data:', error);
         toast({
@@ -132,12 +135,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     try {
-      const { error } = await supabase
-        .from('players')
-        .insert([{ name, avatar_url: avatarUrl }]);
-      
-      if (error) throw error;
-
+      await playerService.createPlayer(name, avatarUrl);
       toast({
         title: "Player added",
         description: `${name} has been added to the player list.`,
@@ -163,12 +161,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     try {
-      const { error } = await supabase
-        .from('games')
-        .insert([{ name, date: new Date().toISOString() }]);
-      
-      if (error) throw error;
-
+      await gameService.createGame(name);
       toast({
         title: "Game added",
         description: `${name} has been added to the games list.`,
@@ -183,7 +176,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const addScore = async (gameId: string, playerId: string, value: number) => {
+  const addScore = async (game_id: string, player_id: string, value: number) => {
     if (!session) {
       toast({
         title: "Authentication required",
@@ -194,12 +187,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     try {
-      const { error } = await supabase
-        .from('scores')
-        .insert([{ game_id: gameId, player_id: playerId, value }]);
-      
-      if (error) throw error;
-
+      await scoreService.createScore(game_id, player_id, value);
       toast({
         title: "Score added",
         description: `New score of ${value} has been recorded.`,
@@ -225,13 +213,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     try {
-      const { error } = await supabase
-        .from('players')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
-
+      await playerService.deletePlayerData(id);
       toast({
         title: "Player deleted",
         description: "Player and associated scores have been removed.",
@@ -257,13 +239,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     try {
-      const { error } = await supabase
-        .from('games')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
-
+      await gameService.deleteGameData(id);
       toast({
         title: "Game deleted",
         description: "Game and associated scores have been removed.",
@@ -289,13 +265,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     try {
-      const { error } = await supabase
-        .from('scores')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
-
+      await scoreService.deleteScoreData(id);
       toast({
         title: "Score deleted",
         description: "Score has been removed.",
@@ -321,13 +291,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     try {
-      const { error } = await supabase
-        .from('players')
-        .update({ name, avatar_url: avatarUrl })
-        .eq('id', id);
-      
-      if (error) throw error;
-
+      await playerService.updatePlayerData(id, name, avatarUrl);
       toast({
         title: "Player updated",
         description: `Player information has been updated.`,
@@ -353,13 +317,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     try {
-      const { error } = await supabase
-        .from('scores')
-        .update({ value })
-        .eq('id', id);
-      
-      if (error) throw error;
-
+      await scoreService.updateScoreData(id, value);
       toast({
         title: "Score updated",
         description: `Score has been updated to ${value}.`,
