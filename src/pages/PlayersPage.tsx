@@ -5,7 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Upload } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -17,21 +18,21 @@ import {
 const PlayersPage = () => {
   const { players, addPlayer, deletePlayer, updatePlayer } = useData();
   const { isAdmin } = useAuth();
-  const [newPlayerName, setNewPlayerName] = useState('');
-  const [editingPlayer, setEditingPlayer] = useState<{ id: string; name: string } | null>(null);
+  const [newPlayerData, setNewPlayerData] = useState({ name: '', avatarUrl: '' });
+  const [editingPlayer, setEditingPlayer] = useState<{ id: string; name: string; avatarUrl?: string | null } | null>(null);
 
-  const handleAddPlayer = (e: React.FormEvent) => {
+  const handleAddPlayer = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPlayerName.trim()) {
-      addPlayer(newPlayerName.trim());
-      setNewPlayerName('');
+    if (newPlayerData.name.trim()) {
+      await addPlayer(newPlayerData.name.trim(), newPlayerData.avatarUrl.trim() || undefined);
+      setNewPlayerData({ name: '', avatarUrl: '' });
     }
   };
 
-  const handleUpdatePlayer = (e: React.FormEvent) => {
+  const handleUpdatePlayer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingPlayer && editingPlayer.name.trim()) {
-      updatePlayer(editingPlayer.id, editingPlayer.name.trim());
+      await updatePlayer(editingPlayer.id, editingPlayer.name.trim(), editingPlayer.avatarUrl || undefined);
       setEditingPlayer(null);
     }
   };
@@ -55,8 +56,13 @@ const PlayersPage = () => {
               <form onSubmit={handleAddPlayer} className="space-y-4">
                 <Input
                   placeholder="Player name"
-                  value={newPlayerName}
-                  onChange={(e) => setNewPlayerName(e.target.value)}
+                  value={newPlayerData.name}
+                  onChange={(e) => setNewPlayerData(prev => ({ ...prev, name: e.target.value }))}
+                />
+                <Input
+                  placeholder="Avatar URL (optional)"
+                  value={newPlayerData.avatarUrl}
+                  onChange={(e) => setNewPlayerData(prev => ({ ...prev, avatarUrl: e.target.value }))}
                 />
                 <Button type="submit">Add Player</Button>
               </form>
@@ -69,9 +75,15 @@ const PlayersPage = () => {
         {players.map((player) => (
           <Card key={player.id} className="card-hover">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base font-medium">
-                {player.name}
-              </CardTitle>
+              <div className="flex items-center gap-3">
+                <Avatar>
+                  <AvatarImage src={player.avatar_url || undefined} alt={player.name} />
+                  <AvatarFallback>{player.name.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <CardTitle className="text-base font-medium">
+                  {player.name}
+                </CardTitle>
+              </div>
               {isAdmin && (
                 <div className="flex gap-2">
                   <Dialog>
@@ -88,7 +100,12 @@ const PlayersPage = () => {
                         <Input
                           placeholder="Player name"
                           value={editingPlayer?.name || ''}
-                          onChange={(e) => setEditingPlayer({ id: player.id, name: e.target.value })}
+                          onChange={(e) => setEditingPlayer(prev => prev ? { ...prev, name: e.target.value } : null)}
+                        />
+                        <Input
+                          placeholder="Avatar URL (optional)"
+                          value={editingPlayer?.avatarUrl || ''}
+                          onChange={(e) => setEditingPlayer(prev => prev ? { ...prev, avatarUrl: e.target.value } : null)}
                         />
                         <Button type="submit">Update Player</Button>
                       </form>
@@ -106,7 +123,7 @@ const PlayersPage = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Total Games: {/* Add total games count */}
+                Total Games: {/* This will be implemented later */}
               </p>
             </CardContent>
           </Card>
