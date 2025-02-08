@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from './AuthContext';
 
 export interface Player {
   id: string;
@@ -46,6 +47,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   const [games, setGames] = useState<Game[]>([]);
   const [scores, setScores] = useState<Score[]>([]);
   const { toast } = useToast();
+  const { session } = useAuth();
 
   useEffect(() => {
     // Load initial data
@@ -120,6 +122,15 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   }, [toast]);
 
   const addPlayer = async (name: string, avatarUrl?: string) => {
+    if (!session) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to add players.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('players')
@@ -142,6 +153,15 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const addGame = async (name: string) => {
+    if (!session) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to add games.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('games')
@@ -164,6 +184,15 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const addScore = async (gameId: string, playerId: string, value: number) => {
+    if (!session) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to add scores.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('scores')
@@ -186,6 +215,15 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const deletePlayer = async (id: string) => {
+    if (!session) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to delete players.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('players')
@@ -209,6 +247,15 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const deleteGame = async (id: string) => {
+    if (!session) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to delete games.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('games')
@@ -232,6 +279,15 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const deleteScore = async (id: string) => {
+    if (!session) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to delete scores.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('scores')
@@ -255,6 +311,15 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const updatePlayer = async (id: string, name: string, avatarUrl?: string) => {
+    if (!session) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to update players.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('players')
@@ -278,6 +343,15 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const updateScore = async (id: string, value: number) => {
+    if (!session) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to update scores.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('scores')
