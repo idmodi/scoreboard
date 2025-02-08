@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Edit2, Trash2, Upload } from 'lucide-react';
+import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
@@ -17,12 +17,15 @@ import {
 
 const PlayersPage = () => {
   const { players, addPlayer, deletePlayer, updatePlayer } = useData();
-  const { isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   const [newPlayerData, setNewPlayerData] = useState({ name: '', avatarUrl: '' });
   const [editingPlayer, setEditingPlayer] = useState<{ id: string; name: string; avatarUrl?: string | null } | null>(null);
 
   const handleAddPlayer = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAuthenticated) {
+      return;
+    }
     if (newPlayerData.name.trim()) {
       await addPlayer(newPlayerData.name.trim(), newPlayerData.avatarUrl.trim() || undefined);
       setNewPlayerData({ name: '', avatarUrl: '' });
@@ -31,10 +34,20 @@ const PlayersPage = () => {
 
   const handleUpdatePlayer = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAuthenticated) {
+      return;
+    }
     if (editingPlayer && editingPlayer.name.trim()) {
       await updatePlayer(editingPlayer.id, editingPlayer.name.trim(), editingPlayer.avatarUrl || undefined);
       setEditingPlayer(null);
     }
+  };
+
+  const handleDeletePlayer = async (id: string) => {
+    if (!isAuthenticated) {
+      return;
+    }
+    await deletePlayer(id);
   };
 
   return (
@@ -114,7 +127,7 @@ const PlayersPage = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => deletePlayer(player.id)}
+                    onClick={() => handleDeletePlayer(player.id)}
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
